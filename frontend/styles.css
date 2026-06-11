@@ -1,0 +1,170 @@
+/* ──────────────────────────────────────────────────────────────────────────
+   DIU Project Checker — Global Styles
+   ────────────────────────────────────────────────────────────────────────── */
+:root {
+  --glass-bg: rgba(255, 255, 255, 0.85);
+  --accent: #0d6efd;
+}
+
+body,
+.bg-soft {
+  font-family: Inter, "Segoe UI", Roboto, sans-serif;
+  background: linear-gradient(135deg, #f5f7fa, #c3cfe2);
+  min-height: 100vh;
+}
+
+/* Glass card */
+.glass {
+  background: var(--glass-bg);
+  backdrop-filter: blur(6px);
+  border-radius: 12px;
+  padding: 16px;
+}
+
+/* Progress bar animation */
+.progress-bar {
+  transition: width 1s ease;
+}
+
+/* ── Page animation ────────────────────────────────────────────────────── */
+.page-animate { animation: fadeInUp .45s ease both; }
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0);    }
+}
+
+.result-shell { animation: fadeIn .25s ease-in; }
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: none;            }
+}
+
+/* ── Button / card hover ───────────────────────────────────────────────── */
+.btn, .card { transition: transform .15s ease, box-shadow .15s ease; }
+.btn:hover  { transform: translateY(-1px); }
+.card:hover { box-shadow: 0 10px 30px rgba(0, 0, 0, .08); }
+
+/* ── Quality grid (result breakdown) ──────────────────────────────────── */
+.quality-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+@media (max-width: 768px) {
+  .quality-grid { grid-template-columns: 1fr; }
+}
+
+.q-item {
+  background: rgba(13, 110, 253, 0.04);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 12px;
+  padding: 12px;
+}
+.q-title { font-weight: 700; font-size: .9rem; }
+.q-value { font-weight: 800; font-size: 1.25rem; margin-top: 2px; }
+.q-sub   { color: rgba(0, 0, 0, 0.65); font-size: .85rem; }
+
+/* ── Learning feedback cards ───────────────────────────────────────────── */
+.learn-card {
+  background: rgba(0, 0, 0, 0.02);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 12px;
+  padding: 12px;
+}
+.learn-title { font-weight: 700; margin-bottom: 8px; }
+.learn-list  { list-style: none; padding-left: 0; margin: 0; display: grid; gap: 10px; }
+
+.hl-item {
+  border-radius: 12px;
+  padding: 10px 12px;
+  line-height: 1.4;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+}
+.hl-tag {
+  display: inline-block;
+  font-size: .72rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 999px;
+  margin-right: 8px;
+}
+
+.hl-plag          { background: rgba(220, 53, 69, 0.08); border-left: 5px solid rgba(220, 53, 69, 0.6); }
+.hl-plag .hl-tag  { background: rgba(220, 53, 69, 0.18); }
+.hl-ai            { background: rgba(13, 202, 240, 0.10); border-left: 5px solid rgba(13, 202, 240, 0.6); }
+.hl-ai .hl-tag    { background: rgba(13, 202, 240, 0.22); }
+
+/* ── Tip items ─────────────────────────────────────────────────────────── */
+.tip-item {
+  background: rgba(0, 0, 0, 0.02);
+  border: 1px dashed rgba(0, 0, 0, 0.15);
+  border-radius: 12px;
+  padding: 10px 12px;
+}
+.tip-title { font-weight: 700; }
+.tip-text  { color: rgba(0, 0, 0, 0.65); font-size: .9rem; }
+
+/* ── Profile photo ─────────────────────────────────────────────────────── */
+.profile-photo {
+  width: 72px;
+  height: 72px;
+  border-radius: 18px;
+  object-fit: cover;
+  border: 2px solid rgba(0, 0, 0, .08);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, .08);
+}
+
+/* ── Turnitin-like history cards ───────────────────────────────────────── */
+.turnitin-card {
+  border: 1px solid #e5e7eb;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, .9);
+  box-shadow: 0 6px 18px rgba(15, 23, 42, .06);
+}
+
+.score-pill {
+  min-width: 86px;
+  border-radius: 999px;
+  padding: 8px 10px;
+  text-align: center;
+  border: 1px solid #e5e7eb;
+  background: #fff;
+}
+.score-num   { font-weight: 800; font-size: 16px; line-height: 1; }
+.score-label { font-size: 11px; color: #6b7280; margin-top: 2px; }
+
+/* Similarity pills */
+.sim-low  { border-color: #c7f9cc; }
+.sim-mid  { border-color: #fde68a; }
+.sim-high { border-color: #fecaca; }
+
+/* AI pills */
+.ai-low  { border-color: #bfdbfe; }
+.ai-mid  { border-color: #c7d2fe; }
+.ai-high { border-color: #a5b4fc; }
+
+/* ── Guideline rows ────────────────────────────────────────────────────── */
+.guideline-row {
+  padding: 10px 12px;
+  background: rgba(0, 0, 0, .02);
+  border: 1px solid rgba(0, 0, 0, .05);
+  border-radius: 14px;
+}
+
+/* ── Matched sources box ───────────────────────────────────────────────── */
+.sources-box {
+  border: 1px solid rgba(0, 0, 0, .08);
+  border-radius: 12px;
+  padding: 12px;
+  background: rgba(255, 255, 255, .7);
+  max-height: 360px;
+  overflow: auto;
+}
+.src-match {
+  border-bottom: 1px dashed rgba(0, 0, 0, .12);
+  padding-bottom: 10px;
+  margin-bottom: 10px;
+}
+.src-item         { margin: 8px 0 10px 0; }
+.src-title a      { text-decoration: none; }
+.src-snippet      { color: #1f2937; }

@@ -1,0 +1,255 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Dashboard — DIU Project Checker</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="styles.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    .right-col { position: sticky; top: 16px; align-self: flex-start; }
+    #result { max-width: 100%; overflow-x: hidden; }
+    #clearanceResult { max-width: 100%; overflow-x: hidden; }
+    .card-section { background:#fff; border-radius:12px; border:1px solid #e5e7eb; padding:20px; margin-bottom:16px; }
+    #quotaWidget { border:1px solid #e5e7eb; border-radius:12px; background:#fff; }
+
+    /* Tab toggle */
+    .mode-tabs { display:flex; gap:8px; margin-bottom:18px; }
+    .mode-tab {
+      flex:1; padding:12px 16px; border-radius:10px; border:2px solid #e5e7eb;
+      background:#f9fafb; cursor:pointer; font-weight:600; font-size:14px;
+      transition:all .18s; text-align:center; color:#374151;
+    }
+    .mode-tab.active { background:#1d4ed8; color:#fff; border-color:#1d4ed8; }
+    .mode-tab:hover:not(.active) { border-color:#1d4ed8; color:#1d4ed8; }
+    .mode-tab .tab-icon { font-size:20px; display:block; margin-bottom:4px; }
+    .mode-tab .tab-label { display:block; font-size:13px; }
+    .mode-tab .tab-sub { display:block; font-size:11px; font-weight:400; opacity:.7; margin-top:2px; }
+
+    /* Clearance specific */
+    .clearance-shell { background:#fff; border-radius:12px; border:1px solid #e5e7eb; padding:24px; }
+    .eligibility-banner {
+      border-radius:10px; padding:18px 24px; margin-bottom:20px;
+      display:flex; align-items:center; gap:16px;
+    }
+    .eligibility-banner.eligible { background:#d1fae5; border:1.5px solid #059669; }
+    .eligibility-banner.ineligible { background:#fee2e2; border:1.5px solid #dc2626; }
+    .eligibility-banner.warning { background:#fef3c7; border:1.5px solid #d97706; }
+    .eligibility-icon { font-size:36px; flex-shrink:0; }
+    .eligibility-title { font-size:20px; font-weight:700; }
+    .eligibility-sub { font-size:13px; opacity:.75; margin-top:2px; }
+
+    .check-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:20px; }
+    @media(max-width:700px){ .check-grid { grid-template-columns:1fr; } }
+
+    .check-card {
+      border-radius:10px; padding:14px 16px;
+      border:1.5px solid #e5e7eb; background:#f9fafb;
+    }
+    .check-card.pass { border-color:#059669; background:#f0fdf4; }
+    .check-card.fail { border-color:#dc2626; background:#fff5f5; }
+    .check-card.warn { border-color:#d97706; background:#fffbeb; }
+    .check-card.unknown { border-color:#9ca3af; background:#f9fafb; }
+    .check-title { font-weight:700; font-size:13px; margin-bottom:4px; display:flex; align-items:center; gap:6px; }
+    .check-msg { font-size:12px; color:#4b5563; }
+    .check-badge { font-size:10px; padding:2px 8px; border-radius:20px; font-weight:700; }
+    .badge-pass { background:#d1fae5; color:#065f46; }
+    .badge-fail { background:#fee2e2; color:#991b1b; }
+    .badge-warn { background:#fef3c7; color:#92400e; }
+    .badge-unknown { background:#f3f4f6; color:#374151; }
+
+    .issues-list { list-style:none; padding:0; margin:0; }
+    .issues-list li { padding:8px 12px; border-radius:8px; margin-bottom:6px; font-size:13px; display:flex; align-items:flex-start; gap:8px; }
+    .issue-item { background:#fff5f5; border:1px solid #fca5a5; }
+    .warning-item { background:#fffbeb; border:1px solid #fcd34d; }
+
+    .sources-table { width:100%; border-collapse:collapse; font-size:12px; margin-top:8px; }
+    .sources-table th { background:#f3f4f6; padding:6px 10px; text-align:left; font-weight:600; }
+    .sources-table td { padding:6px 10px; border-bottom:1px solid #f3f4f6; }
+    .sources-table tr.over-limit td { background:#fff5f5; }
+    .pct-ok { color:#059669; font-weight:700; }
+    .pct-bad { color:#dc2626; font-weight:700; }
+
+    .checklist-section { margin-top:20px; }
+    .checklist-title { font-weight:700; font-size:15px; margin-bottom:12px; }
+    .improvement-card { background:#fff7ed; border:1.5px solid #f97316; border-radius:10px; padding:16px; }
+    .improvement-title { font-weight:700; color:#c2410c; font-size:14px; margin-bottom:8px; }
+  </style>
+</head>
+
+<body class="bg-soft">
+  <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
+    <div class="container-fluid px-4">
+      <a class="navbar-brand fw-bold" href="index.html">DIU Project Checker</a>
+      <div>
+        <a href="profile.html" class="btn btn-outline-primary me-2">Profile</a>
+        <button id="logoutBtn" class="btn btn-outline-secondary">Logout</button>
+      </div>
+    </div>
+  </nav>
+
+  <main class="container-fluid px-4 py-4">
+    <div class="row g-3 align-items-start flex-nowrap" style="min-height:80vh;">
+
+      <!-- LEFT COLUMN -->
+      <div class="col" style="min-width:0; max-width:65%;">
+
+        <!-- Mode Tabs -->
+        <div class="mode-tabs">
+          <div class="mode-tab active" id="tabAnalyze" onclick="switchMode('analyze')">
+            <span class="tab-icon">🔍</span>
+            <span class="tab-label">Analyze Report</span>
+            <span class="tab-sub">AI & Plagiarism detection</span>
+          </div>
+          <div class="mode-tab" id="tabClearance" onclick="switchMode('clearance')">
+            <span class="tab-icon">🎓</span>
+            <span class="tab-label">Check Clearance</span>
+            <span class="tab-sub">University guidelines check</span>
+          </div>
+        </div>
+
+        <!-- ── ANALYZE MODE ── -->
+        <div id="panelAnalyze">
+          <div class="card-section">
+            <h5 class="fw-bold mb-1">Upload Report</h5>
+            <p class="text-muted small mb-3">Check plagiarism and AI-generated content in your project report.</p>
+            <form id="reportForm">
+              <div class="mb-3">
+                <input type="file" class="form-control" id="reportFile" accept=".pdf,.docx,.txt" required>
+                <div class="form-text">Supported: PDF, DOCX, TXT</div>
+              </div>
+              <button class="btn btn-primary" type="submit">Analyze Report</button>
+            </form>
+            <div id="analyzing" class="mt-3 d-none">
+              <div class="spinner-border text-primary" role="status"></div>
+              <span class="ms-3 text-muted">Analyzing — this may take a minute…</span>
+            </div>
+          </div>
+
+          <div id="result" class="d-none mb-3"></div>
+          <div id="guidelinesBox" class="mb-3"></div>
+
+          <div id="progressBars" class="card-section d-none">
+            <h6 class="fw-semibold mb-2">Score Breakdown</h6>
+            <div class="mb-2">
+              <label class="fw-semibold small">Plagiarism</label>
+              <div class="progress" style="height:20px;">
+                <div id="plagBar" class="progress-bar bg-danger" style="width:0%">0%</div>
+              </div>
+            </div>
+            <div class="mb-2">
+              <label class="fw-semibold small">AI-generated</label>
+              <div class="progress" style="height:20px;">
+                <div id="aiBar" class="progress-bar bg-info" style="width:0%">0%</div>
+              </div>
+            </div>
+            <div id="checks" class="mt-2"></div>
+          </div>
+
+          <div class="card-section">
+            <h5 class="fw-semibold mb-3">Your Processed Reports</h5>
+            <div class="table-responsive">
+              <table class="table table-striped align-middle table-sm">
+                <thead>
+                  <tr>
+                    <th>ID</th><th>File</th><th>Plagiarism</th><th>AI</th>
+                    <th>Footer</th><th>Prelim</th><th>Time</th><th>PDF</th>
+                  </tr>
+                </thead>
+                <tbody id="reportsBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── CLEARANCE MODE ── -->
+        <div id="panelClearance" class="d-none">
+          <div class="card-section">
+            <h5 class="fw-bold mb-1">🎓 Clearance Check</h5>
+            <p class="text-muted small mb-3">
+              Upload your final year project (PDF/DOCX/DOC) to verify it meets all DIU submission requirements.
+              The system checks sections, signatures, page numbering, Turnitin report, and plagiarism thresholds.
+            </p>
+
+            <!-- Guidelines summary -->
+            <div class="alert alert-info py-2 mb-3" style="font-size:13px;">
+              <strong>📋 Checklist:</strong>
+              Approval · Declaration · Acknowledgement · Abstract · Table of Contents · List of Figures ·
+              Approval Signatures · Roman page numbers (front matter) · Arabic page numbers (chapters) ·
+              Turnitin report (last page) · Per-source plagiarism ≤3% (DIU Space ≤5%) ·
+              Overall plagiarism ≤35% (UG) / ≤25% (PG)
+            </div>
+
+            <form id="clearanceForm">
+              <div class="mb-3">
+                <label class="form-label fw-semibold">Upload Final Year Project</label>
+                <input type="file" class="form-control" id="clearanceFile" accept=".pdf,.docx,.doc" required>
+                <div class="form-text">Supported: PDF, DOCX, DOC — must include Turnitin report as last page</div>
+              </div>
+              <button class="btn btn-success px-4" type="submit">
+                🎓 Check Clearance Eligibility
+              </button>
+            </form>
+
+            <div id="clearanceAnalyzing" class="mt-3 d-none">
+              <div class="spinner-border text-success" role="status"></div>
+              <span class="ms-3 text-muted">Running clearance checks — please wait…</span>
+            </div>
+          </div>
+
+          <div id="clearanceResult" class="d-none"></div>
+        </div>
+
+      </div>
+
+      <!-- RIGHT COLUMN — sticky -->
+      <div class="col right-col" style="min-width:300px; max-width:35%;">
+
+        <div class="card-section">
+          <h5 class="fw-bold mb-3">Latest Result</h5>
+          <div id="latestResult">
+            <p class="text-muted small">No result yet. Upload a report to begin.</p>
+          </div>
+          <hr>
+          <h6 class="fw-semibold mt-3">Plagiarism Trend</h6>
+          <canvas id="trendChart" height="180"></canvas>
+          <a href="history.html" class="btn btn-outline-secondary btn-sm mt-3 w-100">View Full History</a>
+        </div>
+
+        <div class="card-section" id="quotaWidget">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <h6 class="mb-0 fw-bold">Search Quota</h6>
+            <span class="text-muted small" id="quotaDate"></span>
+          </div>
+          <div class="mb-1 d-flex justify-content-between">
+            <span class="small" id="quotaLabel">Loading...</span>
+            <span class="small fw-bold" id="quotaPct"></span>
+          </div>
+          <div class="progress mb-2" style="height:12px;border-radius:6px;">
+            <div id="quotaBar" class="progress-bar" style="width:0%;border-radius:6px;"></div>
+          </div>
+          <div class="d-flex justify-content-between text-center">
+            <div>
+              <div class="fw-bold" id="quotaReports">—</div>
+              <div class="text-muted" style="font-size:11px;">reports left</div>
+            </div>
+            <div>
+              <div class="fw-bold" id="quotaKeys">—</div>
+              <div class="text-muted" style="font-size:11px;">API keys</div>
+            </div>
+            <div>
+              <div class="fw-semibold small" id="quotaReset">—</div>
+              <div class="text-muted" style="font-size:11px;">resets</div>
+            </div>
+          </div>
+          <div id="quotaWarning" class="mt-2 d-none"></div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
